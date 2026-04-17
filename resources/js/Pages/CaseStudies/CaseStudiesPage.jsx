@@ -1,175 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import Navbar from "@/Components/Navbar";
 import { Link } from "@inertiajs/react";
-import { useRoute } from "../../../../vendor/tightenco/ziggy";
-const caseStudies = [
-    {
-        id: "01",
-        title: "NexBank Digital Platform",
-        desc: "A comprehensive digital banking platform serving over 2 million users across the Middle East. We built a real-time transaction engine, AI-powered fraud detection system, and an intuitive dashboard that reduced customer support tickets by 40%. The platform processes over $1.2B in transactions monthly with 99.99% uptime.",
-        tags: ["React", "Laravel", "Python", "AWS", "AI/ML"],
-        color: "#0ea5e9",
-        gradient: "linear-gradient(135deg, #0ea5e9, #0369a1)",
-        image: "/images/nexbank-mockup.png",
-        link: "https://nexbank.example.com",
-    },
-    {
-        id: "02",
-        title: "MediFlow EHR System",
-        category: "HealthTech",
-        type: "SaaS Platform",
-        client: "Southeast Asia Hospital Network",
-        year: "2023",
-        desc: "An electronic health records system deployed across 500+ hospitals in Southeast Asia. We designed a HIPAA-compliant architecture that handles patient data with zero breaches. The system integrates with 40+ medical devices and reduced patient check-in time from 12 minutes to under 2.",
-        tags: ["React", "Node.js", "PostgreSQL", "HIPAA", "Docker"],
-        color: "#10b981",
-        gradient: "linear-gradient(135deg, #10b981, #047857)",
-        icon: (
-            <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-        ),
-
-        link: null,
-    },
-    {
-        id: "03",
-        title: "CargoLink Logistics",
-        category: "Logistics",
-        type: "Mobile + Web Platform",
-        client: "CargoLink Corp.",
-        year: "2023",
-        desc: "An end-to-end supply chain management platform with real-time GPS tracking across 15,000+ vehicles. We built a route optimization engine using machine learning that cut fuel costs by 23% and delivery times by 18%. The mobile app gives drivers turn-by-turn navigation with offline support.",
-        tags: ["React Native", "Node.js", "Maps API", "ML", "Redis"],
-        color: "#f59e0b",
-        gradient: "linear-gradient(135deg, #f59e0b, #b45309)",
-        icon: (
-            <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <rect x="1" y="3" width="15" height="13" />
-                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                <circle cx="5.5" cy="18.5" r="2.5" />
-                <circle cx="18.5" cy="18.5" r="2.5" />
-            </svg>
-        ),
-
-        link: null,
-    },
-    {
-        id: "04",
-        title: "Aether Commerce",
-        category: "E-Commerce",
-        type: "Website & Platform",
-        client: "Aether Lifestyle",
-        year: "2024",
-        desc: "A luxury e-commerce platform with a headless architecture serving 200K+ monthly visitors. We crafted a bespoke design language with 3D product viewers, AR try-on features, and a personalization engine that increased average order value by 34%. The checkout flow reduced cart abandonment by 28%.",
-        tags: ["Next.js", "Three.js", "Shopify API", "Algolia", "Vercel"],
-        color: "#a78bfa",
-        gradient: "linear-gradient(135deg, #a78bfa, #7c3aed)",
-        icon: (
-            <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
-        ),
-
-        link: "https://aether-commerce.example.com",
-    },
-    {
-        id: "05",
-        title: "GridSense IoT Platform",
-        category: "Energy & IoT",
-        type: "Dashboard & Edge System",
-        client: "GridSense Energy",
-        year: "2022",
-        desc: "A smart grid monitoring platform that processes telemetry from 80,000+ IoT sensors across renewable energy installations. We built real-time anomaly detection that predicts equipment failures 72 hours in advance, preventing $4.2M in downtime costs annually. The dashboard renders 2M+ data points with zero lag.",
-        tags: ["Vue.js", "Go", "TimescaleDB", "MQTT", "Kubernetes"],
-        color: "#f472b6",
-        gradient: "linear-gradient(135deg, #f472b6, #db2777)",
-        icon: (
-            <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-            </svg>
-        ),
-
-        link: null,
-    },
-    {
-        id: "06",
-        title: "Vaultix Cybersecurity Portal",
-        category: "Cybersecurity",
-        type: "Website & Web App",
-        client: "Vaultix Security Inc.",
-        year: "2024",
-        desc: "A threat intelligence portal and corporate website for a leading cybersecurity firm. The public site showcases their capabilities with an interactive threat map, while the authenticated portal gives SOC teams real-time visibility into incidents, automated playbooks, and compliance reporting across 12 regulatory frameworks.",
-        tags: ["React", "Python", "Elasticsearch", "D3.js", "Azure"],
-        color: "#ef4444",
-        gradient: "linear-gradient(135deg, #ef4444, #b91c1c)",
-        icon: (
-            <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-        ),
-
-        link: "https://vaultix.example.com",
-    },
-];
-
-const categories = [
-    "All",
-    "FinTech",
-    "HealthTech",
-    "Logistics",
-    "E-Commerce",
-    "Energy & IoT",
-    "Cybersecurity",
-];
+import { useLanguage } from "@/Contexts/LanguageContext";
 
 function useOnScreen(ref, threshold = 0.1) {
     const [visible, setVisible] = useState(false);
@@ -192,14 +24,14 @@ export default function CaseStudiesPage({ caseStudies = [], categories: navCateg
     const gridRef = useRef(null);
     const heroVis = useOnScreen(heroRef);
     const gridVis = useOnScreen(gridRef);
-    const route = useRoute();
     const [activeFilter, setActiveFilter] = useState("All");
     const [expandedCard, setExpandedCard] = useState(null);
+    const { language } = useLanguage();
 
-    const filtered =
-        activeFilter === "All"
-            ? caseStudies
-            : caseStudies.filter((cs) => cs.category === activeFilter);
+    // const filtered =
+    //     activeFilter === "All"
+    //         ? caseStudies
+    //         : caseStudies.filter((cs) => cs.category === activeFilter);
 
     return (
         <div className="cs-page">
@@ -256,7 +88,7 @@ export default function CaseStudiesPage({ caseStudies = [], categories: navCateg
                                     {/* Dot pattern overlay */}
                                     <img
                                         src={`/images/software.jpg`}    
-                                        alt={`${cs.title} mockup`}
+                                        alt={`${ cs.title} mockup`}
                                         className="cs-card-mockup"
                                     />
                                     <svg
@@ -295,10 +127,10 @@ export default function CaseStudiesPage({ caseStudies = [], categories: navCateg
                                 <div className="cs-card-content">
                                     
                                     <h3 className="cs-card-title">
-                                        {cs.title}
+                                        {language=="english" ? cs.title : cs.title_kurdish}
                                     </h3>
                                    
-                                    <p className="cs-card-desc">{cs.description}</p>
+                                    <p className="cs-card-desc">{language=="english" ? cs.description : cs.description_kurdish}</p>
                                     <div className="cs-card-bottom">
                                     
 
@@ -350,7 +182,7 @@ export default function CaseStudiesPage({ caseStudies = [], categories: navCateg
                         We'd love to learn about your project. Let's talk about
                         how we can build something extraordinary together.
                     </p>
-                    <Link href={route("contacts")} className="btn-primary">
+                    <Link href="/contacts" className="btn-primary">
                         <span>Start a Conversation</span>
                         <svg
                             width="16"

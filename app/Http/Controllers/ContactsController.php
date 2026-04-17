@@ -13,7 +13,7 @@ class ContactsController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Contacts/Index', [
+        return Inertia::render('Contacts/ContactsPage', [
             'categories' => Category::tree(),
         ]);
     }

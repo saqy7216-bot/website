@@ -12,8 +12,10 @@ return new class extends Migration
         Schema::create('case_studies', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('title_kurdish')->nullable();
             $table->string('category')->nullable();    // used for filter pills: "FinTech", "HealthTech" …
             $table->text('description')->nullable();
+            $table->text('description_kurdish')->nullable();
             $table->json('tags')->nullable();           // ["React", "Laravel", …]
             $table->string('gradient')->nullable();     // CSS gradient string for card bg
             $table->string('link')->nullable();         // external URL, nullable

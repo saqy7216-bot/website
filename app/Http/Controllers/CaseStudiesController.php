@@ -11,24 +11,14 @@ class CaseStudiesController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('CaseStudies/Index', [
+        return Inertia::render('CaseStudies/CaseStudiesPage', [
             // Full category tree for the navbar mega menu
             'categories' => Category::tree(),
 
             // All published case studies ordered by sort_order
             // CaseStudiesPage.jsx uses: id, title, description, tags, gradient, link, category
             'caseStudies' => CaseStudy::where('is_published', true)
-                ->orderBy('sort_order')
-                ->get([
-                    'id',
-                    'title',
-                    'category',
-                    'description',
-                    'tags',       // JSON array: ["React", "Laravel", …]
-                    'gradient',   // e.g. "linear-gradient(135deg, #0ea5e9, #0369a1)"
-                    'link',       // nullable — external URL shown as "Visit Website"
-                    'sort_order',
-                ]),
+                ->get(),
         ]);
     }
 }
