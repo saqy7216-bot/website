@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
+import { useLanguage } from "@/Contexts/LanguageContext";
 
 const stats = [
     { value: 250, suffix: '+', label: 'Projects Delivered', desc: 'End-to-end digital products shipped' },
     { value: 98, suffix: '%', label: 'Client Retention', desc: 'Clients who return for more' },
-    { value: 30, suffix: '+', label: 'Countries Served', desc: 'Global footprint of impact' },
+    { value: 30, suffix: '+', label: 'Cities Served', desc: 'footprint of impact' },
 ];
 
 function Counter({ target, suffix, isActive }) {
@@ -13,8 +14,8 @@ function Counter({ target, suffix, isActive }) {
     useEffect(() => {
         if (!isActive || hasRun.current) return;
         hasRun.current = true;
-        const duration = 1800;
-        const steps = 60;
+        const duration = 900;
+        const steps = 40;
         const increment = target / steps;
         let current = 0;
         const timer = setInterval(() => {
@@ -32,8 +33,9 @@ function Counter({ target, suffix, isActive }) {
     return <span>{count}{suffix}</span>;
 }
 
-export default function StatsSection({ isActive }) {
+export default function StatsSection({ homes, isActive }) {
     const [visible, setVisible] = useState(false);
+    const { language } = useLanguage();
 
     useEffect(() => {
         if (isActive) {
@@ -49,27 +51,40 @@ export default function StatsSection({ isActive }) {
             <div className="stats-bg-text" aria-hidden="true">IMPACT</div>
             <div className="section-inner">
                 <div className="section-header center">
-                    <span className="section-label">Our Impact</span>
                     <h2 className="section-title">
-                        Numbers That<br />
-                        <em>Tell Our Story</em>
+                        {language == "english" ? homes.title : homes.title_kurdish}
+
                     </h2>
                 </div>
 
                 <div className="stats-grid">
-                    {stats.map((s, i) => (
-                        <div key={i} className="stat-card" style={{ animationDelay: `${0.1 + i * 0.12}s` }}>
+                        <div  className="stat-card" >
                             <div className="stat-number">
-                                <Counter target={s.value} suffix={s.suffix} isActive={isActive} />
+                                <Counter target={homes.number_1} suffix="+" isActive={isActive} />
                             </div>
-                            <div className="stat-label">{s.label}</div>
-                            <div className="stat-desc">{s.desc}</div>
+                            <div className="stat-label">Projects Delivered</div>
+                            <div className="stat-desc">End-to-end digital products shipped</div>
                             <div className="stat-line" />
                         </div>
-                    ))}
+                        <div  className="stat-card" >
+                            <div className="stat-number">
+                                <Counter target={homes.number_2} suffix="+" isActive={isActive} />
+                            </div>
+                            <div className="stat-label">Client Retention</div>
+                            <div className="stat-desc">Clients who return for more</div>
+                            <div className="stat-line" />
+                        </div>
+                        <div  className="stat-card">
+                            <div className="stat-number">
+                                <Counter target={homes.number_3} suffix="+" isActive={isActive} />
+                            </div>
+                            <div className="stat-label">Cities Served</div>
+                            <div className="stat-desc">footprint of impact</div>
+                            <div className="stat-line" />
+                        </div>
                 </div>
 
-              
+
             </div>
         </section>
     );

@@ -10,7 +10,7 @@ import TestimonialsSection from '@/Components/TestimonialsSection';
 import ContactSection from '@/Components/ContactSection';
 import ScrollIndicator from '@/Components/ScrollIndicator';
 
-export default function Index({ categories = [] }) {
+export default function Index({  homes=[], caseStudies=[], capabilities = [],categories = [] }) {
     const [activeSection, setActiveSection] = useState(0);
     const [isScrolling, setIsScrolling] = useState(false);
     const containerRef = useRef(null);
@@ -81,12 +81,12 @@ export default function Index({ categories = [] }) {
                 <ScrollIndicator activeSection={activeSection} totalSections={totalSections} scrollToSection={scrollToSection} />
 
                 <div className="sections-container">
-                    <div ref={setRef(0)} className="section"><HeroSection isActive={activeSection === 0} scrollToSection={scrollToSection} /></div>
-                    <div ref={setRef(1)} className="section"><ServicesSection isActive={activeSection === 1} /></div>
-                    <div ref={setRef(2)} className="section"><AboutSection isActive={activeSection === 2} /></div>
-                    <div ref={setRef(3)} className="section"><StatsSection isActive={activeSection === 3} /></div>
-                    <div ref={setRef(4)} className="section"><WorkSection isActive={activeSection === 4} /></div>
-                    <div ref={setRef(5)} className="section"><TestimonialsSection isActive={activeSection === 5} /></div>
+                    <div ref={setRef(0)} className="section"><HeroSection homes={homes[0]} isActive={activeSection === 0} scrollToSection={scrollToSection} /></div>
+                    <div ref={setRef(1)} className="section"><ServicesSection homes={homes[1]} capabilities={capabilities} isActive={activeSection === 1} /></div>
+                    <div ref={setRef(2)} className="section"><AboutSection homes={homes[2]} isActive={activeSection === 2} /></div>
+                    <div ref={setRef(3)} className="section"><StatsSection homes={homes[3]} isActive={activeSection === 3} /></div>
+                    <div ref={setRef(4)} className="section"><WorkSection homes={homes[4]} caseStudies={caseStudies} isActive={activeSection === 4} /></div>
+                    <div ref={setRef(5)} className="section"><TestimonialsSection homes={homes[5]} isActive={activeSection === 5} /></div>
                 </div>
             </div>
         </>

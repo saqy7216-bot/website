@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from "@/Contexts/LanguageContext";
 
 const testimonials = [
     {
@@ -24,9 +25,10 @@ const testimonials = [
     },
 ];
 
-export default function TestimonialsSection({ isActive }) {
+export default function TestimonialsSection({ homes, isActive }) {
     const [visible, setVisible] = useState(false);
     const [active, setActive] = useState(0);
+    const { language } = useLanguage();
 
     useEffect(() => {
         if (isActive) {
@@ -49,10 +51,8 @@ export default function TestimonialsSection({ isActive }) {
         <section className={`testimonials-section ${visible ? 'visible' : ''}`}>
             <div className="section-inner">
                 <div className="section-header center">
-                    <span className="section-label">Client Love</span>
                     <h2 className="section-title">
-                        Trusted by Teams<br />
-                        <em>Around the World</em>
+                        {language == "english" ? homes.title : homes.title_kurdish}
                     </h2>
                 </div>
 

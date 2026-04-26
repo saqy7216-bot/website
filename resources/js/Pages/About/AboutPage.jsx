@@ -53,7 +53,6 @@ export default function AboutPage({
                     <div className="diag-line" />
                 </div>
                 <div className="ap-hero-inner">
-                    <span className="section-label">About Rizon</span>
                     <h1 className="ap-hero-title">
                         <span className="ap-line ap-line-1">We Engineer</span>
                         <span className="ap-line ap-line-2">

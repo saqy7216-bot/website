@@ -1,40 +1,15 @@
+import { Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import { useRoute } from "../../../vendor/tightenco/ziggy";
+import { useLanguage } from "@/Contexts/LanguageContext";
 
-const projects = [
-    {
-        id: '01',
-        title: 'NexBank Platform',
-        category: 'FinTech · Web App',
-        desc: 'A real-time banking dashboard with AI-driven fraud detection, serving 2M+ users.',
-        color: '#0ea5e9',
-        accent: '#0369a1',
-        tags: ['React', 'Laravel', 'AI', 'AWS'],
-    },
-    {
-        id: '02',
-        title: 'MediFlow EHR',
-        category: 'HealthTech · SaaS',
-        desc: 'Electronic health records system used by 500+ hospitals across Southeast Asia.',
-        color: '#10b981',
-        accent: '#047857',
-        tags: ['React', 'PostgreSQL', 'HIPAA'],
-    },
-    {
-        id: '03',
-        title: 'CargoLink Logistics',
-        category: 'Logistics · Mobile + Web',
-        desc: 'End-to-end supply chain management platform with real-time GPS tracking.',
-        color: '#f59e0b',
-        accent: '#b45309',
-        tags: ['React Native', 'Node.js', 'Maps API'],
-    },
- 
-];
 
-export default function WorkSection({ isActive }) {
+export default function WorkSection({ homes, caseStudies = [], isActive }) {
     const [visible, setVisible] = useState(false);
     const [hovered, setHovered] = useState(null);
+    const { language } = useLanguage();
 
+    const route = useRoute();
     useEffect(() => {
         if (isActive) {
             const t = setTimeout(() => setVisible(true), 150);
@@ -49,17 +24,16 @@ export default function WorkSection({ isActive }) {
             <div className="section-inner">
                 <div className="work-header">
                     <div>
-                        <span className="section-label">Featured Work</span>
                         <h2 className="section-title">
-                            Projects We're<br />
-                            <em>Proud Of</em>
+                            {language == "english" ? homes.title : homes.title_kurdish}
+
                         </h2>
                     </div>
-                    <button className="btn-outline">View All Projects</button>
+                    <Link href={route("case-studies")} className="btn-outline">View All Projects</Link>
                 </div>
 
                 <div className="work-list">
-                    {projects.map((p, i) => (
+                    {caseStudies.map((p, i) => (
                         <div
                             key={i}
                             className={`work-item ${hovered === i ? 'hovered' : ''}`}
@@ -70,21 +44,17 @@ export default function WorkSection({ isActive }) {
                             <div className="work-item-left">
                                 <span className="work-num">{p.id}</span>
                                 <div className="work-info">
-                                    <h3>{p.title}</h3>
+                                    <h3>{language == "english" ? p.title : p.title_kurdish}</h3>
                                     <span className="work-category">{p.category}</span>
                                 </div>
                             </div>
-                            <p className="work-desc">{p.desc}</p>
+                            <p className="work-desc">{language == "english" ? p.description : p.description_kurdish}</p>
                             <div className="work-tags">
-                                {p.tags.map((t, j) => (
-                                    <span key={j} className="tag">{t}</span>
-                                ))}
+
+                                <a href={p.link} className="tag">View Project</a>
+
                             </div>
-                            <div className="work-arrow">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M7 17L17 7M17 7H7M17 7v10" />
-                                </svg>
-                            </div>
+
                             <div className="work-item-bg" style={{ background: p.color }} />
                         </div>
                     ))}

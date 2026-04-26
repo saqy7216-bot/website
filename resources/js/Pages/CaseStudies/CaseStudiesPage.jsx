@@ -49,7 +49,6 @@ export default function CaseStudiesPage({ caseStudies = [], categories: navCateg
                     <div className="diag-line" />
                 </div>
                 <div className="cs-hero-inner">
-                    <span className="section-label">Case Studies</span>
                     <h1 className="cs-hero-title">
                         <span className="ap-line ap-line-1">Work That</span>
                         <span className="ap-line ap-line-2">

@@ -5,152 +5,170 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    // ── Public ────────────────────────────────────────────────────────────────
+    // ─── Listing ──────────────────────────────────────────────────────────────
 
-    /** /products  — listing page, optionally filtered by category slug */
     public function index(Request $request)
     {
-        $categorySlug = $request->query('category');
+        $search       = $request->get('search');
+        $categorySlug = $request->get('category');
 
-        $query = Product::active()->ordered()->with('category');
-
+        // ── Category filter (includes all descendants) ───────────────────────
+        $filterIds = null;
         if ($categorySlug) {
-            // Collect this category + all descendant IDs so filtering works at any depth
-            $category   = Category::where('slug', $categorySlug)->firstOrFail();
-            $categoryIds = $this->descendantIds($category);
+            $selected = Category::where('slug', $categorySlug)
+                ->where('is_active', true)
+                ->with('allChildren')
+                ->first();
 
-            $query->whereIn('category_id', $categoryIds);
+            if ($selected) {
+                $filterIds = $this->collectAllIds($selected);
+            }
         }
 
-        $products   = $query->paginate(12)->withQueryString();
-        $categories = Category::tree();           // full tree for sidebar filter
+        // ── Product query ────────────────────────────────────────────────────
+        $products = Product::query()
+            ->with('category')
+            ->where('is_active', true)
+            ->when($search,    fn ($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($filterIds, fn ($q) => $q->whereIn('category_id', $filterIds))
+            ->orderBy('sort_order')
+            ->paginate(12)
+            ->withQueryString()
+            ->through(fn ($p) => [
+                'id'                => $p->id,
+                'name'              => $p->name,
+                'slug'              => $p->slug,
+                'image'             => $p->image,
+                'short_description' => $p->short_description,
+                'model_number'      => $p->model_number,
+                'category'          => $p->category
+                    ? ['name' => $p->category->name, 'slug' => $p->category->slug]
+                    : null,
+            ]);
+
+        // ── Sidebar category tree ────────────────────────────────────────────
+        $categoryTree = Category::whereNull('parent_id')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->with([
+                'children' => fn ($q) => $q
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->withCount('products')
+                    ->with([
+                        'children' => fn ($q2) => $q2
+                            ->where('is_active', true)
+                            ->orderBy('sort_order')
+                            ->withCount('products'),
+                    ]),
+            ])
+            ->withCount('products')
+            ->get()
+            ->map(fn ($cat) => $this->mapCategoryForSidebar($cat));
+
+        // ── Breadcrumbs ──────────────────────────────────────────────────────
+        $breadcrumbs = $this->buildBreadcrumb($categorySlug);
 
         return Inertia::render('Products/Index', [
-            'products'        => $products,
-            'categories'      => $categories,
-            'activeCategorySlug' => $categorySlug,
+            'products'     => $products,
+            'categoryTree' => $categoryTree,
+            'filters'      => $request->only(['search', 'category']),
+            'breadcrumbs'  => $breadcrumbs,
         ]);
     }
 
-    /** /products/{slug}  — product detail page */
+    // ─── Detail ───────────────────────────────────────────────────────────────
+
     public function show(string $slug)
     {
-        $product = Product::active()
+        $product = Product::where('is_active', true)
             ->where('slug', $slug)
-            ->with('category.parent.parent')   // up to 3 levels for breadcrumb
+            ->with('category.parent.parent')
             ->firstOrFail();
 
-        $related = Product::active()
+        $related = Product::where('is_active', true)
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->ordered()
+            ->orderBy('sort_order')
             ->limit(4)
             ->get();
 
         return Inertia::render('Products/Show', [
-            'product'    => $product,
-            'breadcrumb' => $product->breadcrumb(),
-            'related'    => $related,
+            'product'     => $product,
+            'related'     => $related,
+            'breadcrumbs' => $this->buildDetailBreadcrumb($product),
         ]);
     }
 
-    // ── Admin CRUD ────────────────────────────────────────────────────────────
+    // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    public function adminIndex()
-    {
-        $products = Product::with('category')->ordered()->paginate(20);
-
-        return Inertia::render('Admin/Products/Index', [
-            'products' => $products,
-        ]);
-    }
-
-    public function create()
-    {
-        return Inertia::render('Admin/Products/Form', [
-            'categories' => Category::tree(),
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate($this->rules());
-
-        $validated['slug'] = Str::slug($validated['name']);
-
-        Product::create($validated);
-
-        return redirect()->route('admin.products.index')
-                         ->with('success', 'Product created.');
-    }
-
-    public function edit(Product $product)
-    {
-        return Inertia::render('Admin/Products/Form', [
-            'product'    => $product,
-            'categories' => Category::tree(),
-        ]);
-    }
-
-    public function update(Request $request, Product $product)
-    {
-        $validated = $request->validate($this->rules($product->id));
-
-        $product->update($validated);
-
-        return redirect()->route('admin.products.index')
-                         ->with('success', 'Product updated.');
-    }
-
-    public function destroy(Product $product)
-    {
-        $product->delete();
-
-        return redirect()->route('admin.products.index')
-                         ->with('success', 'Product deleted.');
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    /**
-     * Return the IDs of a category and all its descendants (recursive).
-     */
-    private function descendantIds(Category $category): array
+    private function collectAllIds(Category $category): array
     {
         $ids = [$category->id];
-
         foreach ($category->allChildren as $child) {
-            $ids = array_merge($ids, $this->descendantIds($child));
+            $ids = array_merge($ids, $this->collectAllIds($child));
         }
-
         return $ids;
     }
 
-    private function rules(?int $ignoreId = null): array
+    private function mapCategoryForSidebar(Category $cat): array
     {
         return [
-            'category_id'       => 'nullable|exists:categories,id',
-            'name'              => 'required|string|max:255',
-            'model_number'      => 'nullable|string|max:100',
-            'short_description' => 'nullable|string',
-            'description'       => 'nullable|string',
-            'overview'          => 'nullable|string',
-            'image'             => 'nullable|string',
-            'hero_image'        => 'nullable|string',
-            'overview_image'    => 'nullable|string',
-            'specs'             => 'nullable|array',
-            'features'          => 'nullable|array',
-            'highlights'        => 'nullable|array',
-            'downloads'         => 'nullable|array',
-            'price'             => 'nullable|numeric|min:0',
-            'is_featured'       => 'boolean',
-            'is_active'         => 'boolean',
-            'sort_order'        => 'integer|min:0',
+            'id'            => $cat->id,
+            'name'          => $cat->name,
+            'slug'          => $cat->slug,
+            'icon'          => $cat->icon,
+            'product_count' => $cat->products_count,
+            'children'      => $cat->children->map(
+                fn ($child) => $this->mapCategoryForSidebar($child)
+            )->values()->all(),
         ];
+    }
+
+    private function buildBreadcrumb(?string $categorySlug): array
+    {
+        $crumbs = [
+            ['label' => 'Home',     'href' => '/'],
+            ['label' => 'Products', 'href' => '/products'],
+        ];
+
+        if ($categorySlug) {
+            $cat = Category::where('slug', $categorySlug)->first();
+            if ($cat) {
+                $crumbs[] = ['label' => $cat->name, 'href' => null];
+            }
+        }
+
+        return $crumbs;
+    }
+
+    private function buildDetailBreadcrumb(Product $product): array
+    {
+        $crumbs = [
+            ['label' => 'Home',     'href' => '/'],
+            ['label' => 'Products', 'href' => '/products'],
+        ];
+
+        $cat   = $product->category;
+        $chain = [];
+        while ($cat) {
+            $chain[] = $cat;
+            $cat     = $cat->parent ?? null;
+        }
+
+        foreach (array_reverse($chain) as $ancestor) {
+            $crumbs[] = [
+                'label' => $ancestor->name,
+                'href'  => '/products?category=' . $ancestor->slug,
+            ];
+        }
+
+        $crumbs[] = ['label' => $product->name, 'href' => null];
+
+        return $crumbs;
     }
 }
