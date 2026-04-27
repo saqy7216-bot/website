@@ -100,7 +100,13 @@ function SidebarItem({ cat, activeCategory, onSelect }) {
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
-export default function CategoriesPage({
+export default function imgUrl(path) {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+}
+
+function CategoriesPage({
     categories    = [],    // full tree for Navbar mega-menu
     categoryTree  = [],    // root categories + children for sidebar
     products      = { data: [], links: [], current_page: 1, last_page: 1 },
@@ -278,9 +284,9 @@ export default function CategoriesPage({
                                     >
                                         {/* Background image / placeholder */}
                                         <div className="cat-card-bg">
-                                            {product.image_url ? (
+                                            {imgUrl(product.image) ? (
                                                 <img
-                                                    src={product.image_url}
+                                                    src={imgUrl(product.image)}
                                                     alt={product.name}
                                                     className="cat-card-img"
                                                 />

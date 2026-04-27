@@ -96,7 +96,6 @@ function SidebarItem({ cat, activeSlug, onSelect }) {
     );
 }
 
-// ─── Product card ─────────────────────────────────────────────────────────────
 function ProductCard({ product, index }) {
     const thumb = imgUrl(product.image);
 
